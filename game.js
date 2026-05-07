@@ -70,31 +70,37 @@ class PreloadScene extends Phaser.Scene {
         // In production, replace with actual audio files
 
         // Assets
-        // NOTE: current source frames are large: 1536x1024 (not 512x512).
-        this.load.spritesheet('pendekar_silat', 'assets/pendekar-spritesheet.png', {
-            frameWidth: 1536,
-            frameHeight: 1024
-        });
-        // 4608x1024 => 3x1 frames (3 frames total)
-        this.load.spritesheet('ghost_hantucina', 'assets/hantucina-spritesheet.png', {
-            frameWidth: 1536,
-            frameHeight: 1024
-        });
-        // 4608x1024 => 3x1 frames (3 frames total)
-        this.load.spritesheet('ghost_toyol', 'assets/toyol-spritesheet.png', {
-            frameWidth: 1536,
-            frameHeight: 1024
-        });
-        // 12288x1024 => 8x1 frames (8 frames total)
-        this.load.spritesheet('ghost_pocong', 'assets/pocong-spritesheet.png', {
-            frameWidth: 1536,
-            frameHeight: 1024
-        });
-        // 13824x1024 => 9x1 frames (9 frames total)
-        this.load.spritesheet('ghost_pontianak', 'assets/pontianak-spritesheet.png', {
-            frameWidth: 1536,
-            frameHeight: 1024
-        });
+        // NOTE: some spritesheets are extremely wide and can exceed mobile GPU MAX_TEXTURE_SIZE.
+        // On mobile, fall back to single-frame idle images to avoid black-square textures.
+        const mobile = isMobileDevice();
+        if (mobile) {
+            this.load.image('pendekar_silat', 'assets/pendekar-idle.png');
+            this.load.image('ghost_hantucina', 'assets/hantucina-idle.png');
+            this.load.image('ghost_toyol', 'assets/toyol-idle.png');
+            this.load.image('ghost_pocong', 'assets/pocong-idle.png');
+            this.load.image('ghost_pontianak', 'assets/pontianak-idle.png');
+        } else {
+            this.load.spritesheet('pendekar_silat', 'assets/pendekar-spritesheet.png', {
+                frameWidth: 1536,
+                frameHeight: 1024
+            });
+            this.load.spritesheet('ghost_hantucina', 'assets/hantucina-spritesheet.png', {
+                frameWidth: 1536,
+                frameHeight: 1024
+            });
+            this.load.spritesheet('ghost_toyol', 'assets/toyol-spritesheet.png', {
+                frameWidth: 1536,
+                frameHeight: 1024
+            });
+            this.load.spritesheet('ghost_pocong', 'assets/pocong-spritesheet.png', {
+                frameWidth: 1536,
+                frameHeight: 1024
+            });
+            this.load.spritesheet('ghost_pontianak', 'assets/pontianak-spritesheet.png', {
+                frameWidth: 1536,
+                frameHeight: 1024
+            });
+        }
 
         this.load.image('kubur_1', 'assets/kubur-1.png');
         this.load.image('rumah_usang', 'assets/rumah-usang.png');
@@ -432,7 +438,8 @@ class GameScene extends Phaser.Scene {
         const groundY = this.groundY ?? (height - 60);
         const entityGroundY = groundY + 30;
         this.entityGroundY = entityGroundY;
-        if (!this.anims.exists('pendekar_idle')) {
+        const pendekarIsSheet = this.textures.get('pendekar_silat')?.frameTotal > 1;
+        if (pendekarIsSheet && !this.anims.exists('pendekar_idle')) {
             this.anims.create({
                 key: 'pendekar_idle',
                 frames: [
@@ -444,7 +451,7 @@ class GameScene extends Phaser.Scene {
             });
         }
 
-        if (!this.anims.exists('pendekar_attack')) {
+        if (pendekarIsSheet && !this.anims.exists('pendekar_attack')) {
             this.anims.create({
                 key: 'pendekar_attack',
                 frames: [
@@ -457,7 +464,7 @@ class GameScene extends Phaser.Scene {
         }
 
         // NOTE: tweak frame numbers to match your spritesheet's "attack keris" frames.
-        if (!this.anims.exists('pendekar_attack_keris')) {
+        if (pendekarIsSheet && !this.anims.exists('pendekar_attack_keris')) {
             this.anims.create({
                 key: 'pendekar_attack_keris',
                 frames: [
@@ -470,7 +477,8 @@ class GameScene extends Phaser.Scene {
                 repeat: 0
             });
         }
-        if (!this.anims.exists('ghost_hantucina_loop')) {
+        const ghostHantuIsSheet = this.textures.get('ghost_hantucina')?.frameTotal > 1;
+        if (ghostHantuIsSheet && !this.anims.exists('ghost_hantucina_loop')) {
             this.anims.create({
                 key: 'ghost_hantucina_loop',
                 frames: this.anims.generateFrameNumbers('ghost_hantucina', { start: 0, end: 2 }),
@@ -478,7 +486,8 @@ class GameScene extends Phaser.Scene {
                 repeat: -1
             });
         }
-        if (!this.anims.exists('ghost_toyol_loop')) {
+        const ghostToyolIsSheet = this.textures.get('ghost_toyol')?.frameTotal > 1;
+        if (ghostToyolIsSheet && !this.anims.exists('ghost_toyol_loop')) {
             this.anims.create({
                 key: 'ghost_toyol_loop',
                 frames: this.anims.generateFrameNumbers('ghost_toyol', { start: 0, end: 2 }),
@@ -486,7 +495,8 @@ class GameScene extends Phaser.Scene {
                 repeat: -1
             });
         }
-        if (!this.anims.exists('ghost_pocong_loop')) {
+        const ghostPocongIsSheet = this.textures.get('ghost_pocong')?.frameTotal > 1;
+        if (ghostPocongIsSheet && !this.anims.exists('ghost_pocong_loop')) {
             this.anims.create({
                 key: 'ghost_pocong_loop',
                 frames: this.anims.generateFrameNumbers('ghost_pocong', { start: 0, end: 7 }),
@@ -494,7 +504,8 @@ class GameScene extends Phaser.Scene {
                 repeat: -1
             });
         }
-        if (!this.anims.exists('ghost_pontianak_loop')) {
+        const ghostPontiIsSheet = this.textures.get('ghost_pontianak')?.frameTotal > 1;
+        if (ghostPontiIsSheet && !this.anims.exists('ghost_pontianak_loop')) {
             this.anims.create({
                 key: 'ghost_pontianak_loop',
                 frames: this.anims.generateFrameNumbers('ghost_pontianak', { start: 0, end: 8 }),
@@ -506,7 +517,7 @@ class GameScene extends Phaser.Scene {
         this.pendekar = this.add.sprite(150, entityGroundY, 'pendekar_silat', 0)
             .setOrigin(0.5, 1)
             .setDisplaySize(225, 150);
-        this.pendekar.play('pendekar_idle');
+        if (pendekarIsSheet) this.pendekar.play('pendekar_idle');
 
         // HUD
         this.createHUD();
@@ -869,6 +880,8 @@ class GameScene extends Phaser.Scene {
     // Pendekar anim trigger while typing (called from handleKeyboardInput)
     playPendekarTypingAnim() {
         if (!this.pendekar?.anims) return;
+        const pendekarIsSheet = this.textures.get('pendekar_silat')?.frameTotal > 1;
+        if (!pendekarIsSheet) return;
 
         const now = this.time?.now ?? Date.now();
         const cooldownMs = 80; // prevent restarting anim every key repeat
@@ -931,7 +944,8 @@ class GameScene extends Phaser.Scene {
         const ghost = this.add.sprite(width + 50, ghostY, ghostType, 0)
             .setOrigin(0.5, 1)
             .setDisplaySize(size.w, size.h);
-        ghost.play(`${ghostType}_loop`);
+        const ghostIsSheet = this.textures.get(ghostType)?.frameTotal > 1;
+        if (ghostIsSheet) ghost.play(`${ghostType}_loop`);
         ghost.setData('ghostType', ghostType);
         ghost.setData('proverb', proverb);
         ghost.setData('answered', false);
