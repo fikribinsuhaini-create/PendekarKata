@@ -839,8 +839,25 @@ class GameScene extends Phaser.Scene {
             // Mobile "typing" equivalent: play pendekar attack/keris anim on tap
             this.playPendekarTypingAnim();
 
+            // Mobile: wrong answer should not hide all options.
+            // Only remove/disable clicked wrong option; hide all only when correct.
+            const normalizedUser = text.trim().toLowerCase();
+            const normalizedCorrect = correctAnswer.trim().toLowerCase();
+            const isCorrect = normalizedUser === normalizedCorrect;
+
             this.checkAnswer(text, correctAnswer);
-            this.answerButtons.setVisible(false);
+
+            if (isCorrect) {
+                this.answerButtons.setVisible(false);
+            } else {
+                button.disableInteractive();
+                this.tweens.add({
+                    targets: button,
+                    alpha: 0,
+                    duration: 180,
+                    onComplete: () => button.destroy()
+                });
+            }
         });
 
         button.on('pointerover', () => {
