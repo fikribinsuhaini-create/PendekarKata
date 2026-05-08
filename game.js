@@ -74,7 +74,11 @@ class PreloadScene extends Phaser.Scene {
         // On mobile, fall back to single-frame idle images to avoid black-square textures.
         const mobile = isMobileDevice();
         if (mobile) {
-            this.load.image('pendekar_silat', 'assets/pendekar-idle.png');
+            // Mobile-friendly pendekar sheet (2560x171 => 10x1 frames @ 256x171)
+            this.load.spritesheet('pendekar_silat', 'assets/pendekar-mobile.png', {
+                frameWidth: 256,
+                frameHeight: 171
+            });
             this.load.image('ghost_hantucina', 'assets/hantucina-idle.png');
             this.load.image('ghost_toyol', 'assets/toyol-idle.png');
             this.load.image('ghost_pocong', 'assets/pocong-idle.png');
@@ -438,15 +442,20 @@ class GameScene extends Phaser.Scene {
         const groundY = this.groundY ?? (height - 60);
         const entityGroundY = groundY + 30;
         this.entityGroundY = entityGroundY;
-        const pendekarIsSheet = this.textures.get('pendekar_silat')?.frameTotal > 1;
+        const pendekarTexture = this.textures.get('pendekar_silat');
+        const pendekarIsSheet = pendekarTexture?.frameTotal > 1;
+        const pendekarFrame0 = pendekarIsSheet ? pendekarTexture.get(0) : null;
+        const pendekarIsMobileSheet = Boolean(pendekarFrame0 && pendekarFrame0.height === 171);
         if (pendekarIsSheet && !this.anims.exists('pendekar_idle')) {
             this.anims.create({
                 key: 'pendekar_idle',
-                frames: [
-                    { key: 'pendekar_silat', frame: 0 },
-                    { key: 'pendekar_silat', frame: 1 }
-                ],
-                frameRate: 6,
+                frames: pendekarIsMobileSheet
+                    ? this.anims.generateFrameNumbers('pendekar_silat', { start: 0, end: 4 })
+                    : [
+                        { key: 'pendekar_silat', frame: 0 },
+                        { key: 'pendekar_silat', frame: 1 }
+                    ],
+                frameRate: pendekarIsMobileSheet ? 10 : 6,
                 repeat: -1
             });
         }
@@ -454,11 +463,13 @@ class GameScene extends Phaser.Scene {
         if (pendekarIsSheet && !this.anims.exists('pendekar_attack')) {
             this.anims.create({
                 key: 'pendekar_attack',
-                frames: [
-                    { key: 'pendekar_silat', frame: 3 },
-                    { key: 'pendekar_silat', frame: 4 }
-                ],
-                frameRate: 12,
+                frames: pendekarIsMobileSheet
+                    ? this.anims.generateFrameNumbers('pendekar_silat', { start: 5, end: 6 })
+                    : [
+                        { key: 'pendekar_silat', frame: 3 },
+                        { key: 'pendekar_silat', frame: 4 }
+                    ],
+                frameRate: pendekarIsMobileSheet ? 14 : 12,
                 repeat: 0
             });
         }
@@ -467,13 +478,15 @@ class GameScene extends Phaser.Scene {
         if (pendekarIsSheet && !this.anims.exists('pendekar_attack_keris')) {
             this.anims.create({
                 key: 'pendekar_attack_keris',
-                frames: [
-                    { key: 'pendekar_silat', frame: 5 },
-                    { key: 'pendekar_silat', frame: 6 },
-                    { key: 'pendekar_silat', frame: 7 },
-                    { key: 'pendekar_silat', frame: 8 }
-                ],
-                frameRate: 14,
+                frames: pendekarIsMobileSheet
+                    ? this.anims.generateFrameNumbers('pendekar_silat', { start: 7, end: 9 })
+                    : [
+                        { key: 'pendekar_silat', frame: 5 },
+                        { key: 'pendekar_silat', frame: 6 },
+                        { key: 'pendekar_silat', frame: 7 },
+                        { key: 'pendekar_silat', frame: 8 }
+                    ],
+                frameRate: pendekarIsMobileSheet ? 14 : 14,
                 repeat: 0
             });
         }
